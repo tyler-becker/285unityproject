@@ -1,0 +1,22 @@
+// For this we need to make gameObjects to place on top of the terrain so we can control where to put Towers
+// I saw there was a way to do this without using gameObjects that elminates overhead but it doesn't make sense to me.
+// So we will do it the cluncky way - this is called Prim's Algorithm(wikipedia)
+// We will not be sure if this works until later on when we get the towers rolling - but when it is in Unity it shows a grid when
+// the gameObject color is changed. So i dunno
+
+public class GridScript : MonoBehaviour {
+  public Transform CellPrefab;
+  public Vector3 Size;
+  
+  void Start() {
+    CreateGrid();
+  }
+  
+  // this actually looks like stuff we are during in school lol
+  void CreateGrid() {
+    for (int x = 0; x < Size.x; x++) {
+      for (int z = 0; z < Size.z; z++) {
+      Instantiate(CellPrefab, new Vector3(x, 0, 0), Quaternion.identity);
+      }
+    }
+  }
