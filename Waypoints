@@ -1,0 +1,60 @@
+//Ok guys, here is the way point system. When its copies make sure all the names/functions are the same so they can be called correctly
+// There is a shit ton of youtube videos and unity forum notes on this stuff. Reference those
+
+using UnityEngine;
+using System.Collections;
+
+public class MoveWayPoint : MonoBehaviour {
+
+  //This array is used to set which points are the waypoints we are using
+  public GameObject[] wayPoints;
+  
+  //Speed and distance. Use floating points for more control - i think so atleast. All the tutorials use floating points
+  public float spd;
+  public float distance;
+  
+  //Need a place holder for current waypoint
+  public int currentPoint;
+  
+  //Need a vector3 to hold the postion of the next waypoint. Vector3 is used alot
+  private Vector3 targetPosition;
+  
+  //Not sure why we need this - but every example has this. Maybe helps with update??
+  private bool change = false;
+  
+  //Here we get the first waypoint
+  void Start() {
+    targerPosition = wayPoints[currentPoint].transform.position;
+  }
+
+  //Now we need to update the waypoints.Should only have to write this once and call it again
+  // We need to check the distance - then if true - goes to next point. I understand all that - but not the DrawWay code
+  //i found that and know we can add it to show lines on our map for pics - same with the rotate code
+  void Update() {
+    if ((Vector3.Distance(transform.position, targetPosition) < distance !change) {
+      nextPoint();
+    }
+    else {
+      float dir = 0;
+      // this stuff here is super nuts. Got it from youtube - but it works. Think it helps the models turn and maintain oritentaion
+      // works like a champ. Also shows RayLines on the map which is nice. Its beyond me.
+      dir = -Mathf.Atan2(transform.position.z - targetPosition.z, transform.position.x - targetPosition.x) - 90 * Mathf.Deg2Rad;
+      Debug.DrawRay(transform.position, new Vector3(Mathf.Sin(dir), 0, Mathf.Cos(dir)) * 20);
+      transform.rotation = Quaternion.AngleAxis(dir * Mathf.Rad2Deg, Vector3.up);
+      transform.Translate(Vector3.forward * spd * Time.deltaTime);
+      
+      change = false;
+    }
+}
+ //here we need to check if there is a next point - and increament. This should be the last piece
+  private void nextPoint() {
+    if (currentPoint >= waypoints.Length - 1)
+      currentPoint = 0;
+    else
+      currentPoint++;
+    targetPosition = wayPoints[currentPoints].transform.position;
+    change = true;
+  }
+
+
+
