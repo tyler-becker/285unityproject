@@ -1,0 +1,108 @@
+// once again there is a metric shit ton of videos/forum post and tutorials on this out there. This one of those things that
+// we need to stay organazied and make sure we are calling this correctly from teh waypoint part. There are also several managers
+// in the asset store - pull those up/ load them up and look at the code and see how it works. Makes it easier to conceptialize
+// Also - we need to make sure we tag the enemies in the inspector(default is untagged)
+//and this can not be stressed enough. Make sure we stay organized and remember to all use the same names for things. All it takes
+// is for one of us to not use the same name for an object to mess us teh scene. Same goes for assets. If someone downloads
+// a tree we all need to have the tree
+
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+
+// this is where we define the enemies. Gotta remember that unity is dumb we need to tell it what to do and what to remeber
+// Serializable just means to change the values in teh Inspector
+[System.Serializable]
+public class SpawnSystem {
+  public GameObject enemyPrefab;
+  public float spawnInterval = 2;
+  public int maxEnemies = 20;
+  //spawn on land
+  public bool useTerrian = true;
+  private int curWave = 1;
+  // are we spawning? not until we say so
+  private bool isSpawning = false;
+  // get enemies to spawn
+  private GameObject[] curEnemies;
+  // we needed to add this so they spawn in the castle instead of all over the place
+  private Vector3 spawnPoint;
+  // I have no idea why we need this - but it is in all teh examples seen
+  public float spawnHeightOffset = 0.0f;
+  // Had to add this too - need to tell how close to spawn to spawnpoint. Changed to public so we can mess with it in function
+  public spawnRadiusMin = 1.0f;
+  // Had to add this too - needed it for the findspawn point stuff for math reasons
+  pubic spawnRadiusMax = 1.0f;
+}
+
+// lets start this bad boy up - make it simple so we can call it tots whenever
+void Start() {
+  // here is that height thing. Why is it important? Shouldn't it just load the model on the terrian
+  enemyHeight = enemyPrefab.GetComponent<CharacterController>().height;
+  // start spawning shit
+  StartCorroutine(SpawnEnemy());
+}
+
+// here we need  to have an update to see if there are enemies still alive and if not spawn more.
+// there us a built in thing call "Find Game objects with tag" witch is why it is so important to make sure all of our 
+//enemies are tagged(makes sense now). Remeber this because we might eed it for something else later
+void Update() {
+  if (!isSpawning) {
+    curEnemies = GameObject.FindGameObjectsWithTag("Enemies");
+      if (curEnemies.Length <= 0) {
+        IncreaseWave();
+        }
+      }
+  }
+
+//here is a link that describes IEnumerator: https://msdn.microsoft.com/en-us/library/system.collections.ienumerable(v=vs.110).aspx
+// here we need to tell the game to start spawning shit in a controlled way and to find teh spawnpoint. Luckly unity makes
+//that somewhat easier. Alot of code is psedo code esque. Like Wait for seconds, find spawn point, get object, etc..
+// link explaining Quaternion(second time we needed it): http://docs.unity3d.com/ScriptReference/Quaternion.html
+IEnumerator SpawnEnemy() {
+  isSpawning = true;
+  for (int i = 0; i < maxEnemies; i++) {
+    return new WaitForSeconds(spawnDelay);
+    FindSpawnPoint(spawnRadiusMin);
+    Instantiate(enemyPrefab, spawnPoint, Quaternion.identity);
+    }
+  isSpawning = false;
+}
+
+// this is the hard part. Actually looking for the waypoint0/spawn point and moving. had to look on the unity forum
+// ALOT. Also some great vids on this. I do not really understand the math part of it. Had my buddy help
+// me figure it out. I am not sure why we can not just drop the enemies down. Why do we need pointX/pointZ?
+Vector3 FindSpawnPoint(float spawnRadius) {
+  // Jeff helped me with this
+  float pointX = (spawnRadius * Mathf.Cos(angleInDegrees * Mathf.PI / 180.0f)) + transform.position.x;
+  float pointZ = (spawnRadius * Mathf.Sin(angleInDegrees * Mathf.PI / 180.0f)) + transform.position.z;
+  spawnPoint = new Vector3(pointX, 0.0f, pointZ);
+  // added this so it can know to plop on top of terrain. But I do not think it works because our enemies
+  // are not using ther terrain. Actually had to lower to terrain by 5 on the Y-axis so that they spawn correctly
+  // and not cut in half. Might be able to just delete it if they lowering of the level doesnt affect anythinng
+  if (useTerrain) {
+    spawnPoint.y = Terrain.activeTerrain.SampleHeight(spawnPoint);
+    spawnPoint.y += (enemyHeight / 2) + spawnHeightOffset;
+    return spawnPoint;
+}
+
+//here we need to increase teh wave becasue we need to have multiple waves
+void IncreaseWave() {
+  curWave++;
+  maxEnemies = curWave * 5;
+  StartCoroutine(SpawnEnemy());
+}
+
+// found this cool snippet. We can show it on the gui now. Unity has a built in GUI maker that seeems easy to use.
+void onGui() {
+  GUI.Label(new Rect(5, 5, 100, 30), "Wave " + curWave.ToString());   
+  }
+}
+
+
+
+
+    
+
+
+
+
