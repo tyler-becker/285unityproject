@@ -1,0 +1,69 @@
+// we need a game info class so we can store all the information we want to place in the gui. So we need a timer, health,
+// money, enemies alive/killed. This shouldn't be to bad because we are just pulling information. Make sure we all use the same
+//variables
+
+using UnityEngine;
+using UnityEngine.UI;
+using System.Collections;
+
+public class GameInfo : MonoBehaviour
+{
+
+  // just labeling all the shiz we need. Take note how we need to use lbl_ to display
+  
+    public WaveManager waveScript;
+    public GameObject btn_startWave;
+    public Text lbl_wave;
+    public Text lbl_alive;
+    public Text lbl_killed;
+    public Text lbl_health;
+    public Text lbl_waveTimer;
+    public Text[] lbl_resources;
+    
+     void Start()
+    {
+        //print error if waveScript is not set in editor
+        if (waveScript == null)
+            Debug.LogWarning("WE MESSED UP!! AHHHHHH :-)");
+    }
+    
+    void Update()
+    {
+    bool nextWave = CheckWave();  // returns the wave number we be on playa
+    
+    if(btn_startWave.active != nextWave)  // lets us use teh start button. Its cool how we can write code like common
+      btn_startWave.SetActive(nextWave);  // common english
+      
+      // talks to gamehandler to display text for us
+        lbl_wave.text = GameHandler.wave + " / " + GameHandler.waveCount;
+        lbl_alive.text = GameHandler.enemiesAlive.ToString();
+        lbl_killed.text = GameHandler.enemiesKilled.ToString();
+        lbl_health.text = GameHandler.gameHealth.ToString();
+        
+        // Out timer! 
+         if (waveScript.secTillWave == 0)
+            lbl_waveTimer.text = "";
+        else
+            lbl_waveTimer.text = waveScript.secTillWave.ToString();
+           
+        // Talks to handler so player can have money to buy towers and display that money 
+        for (int i = 0; i < lbl_resources.Length; i++)
+        {
+            lbl_resources[i].text = GameHandler.resources[i].ToString();
+        }
+        
+        private bool CheckWave()
+        {
+        if(SV.showExit || GameHandler.gameHealth <= 0) {// FINALLY!! This makes the start button go away after pressing
+          return false;
+        }
+        return true;
+        }
+        
+          //start next wave, spawn baddies
+      public void NextWave()
+      {
+        waveScript.StartWaves();
+      }
+    }
+  }
