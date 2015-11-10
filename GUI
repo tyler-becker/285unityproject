@@ -1,0 +1,75 @@
+// We can place all the GUI stuff in here and then throw it all in the same class and call them.
+// no need to have one class for each function such as show buttons, upgrade, build, use grid, etc..
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using System.Collections;
+
+
+// dont call it just GUI in case it messes something up - better safe than sorry
+public class GUIImpl : MonoBehaviour
+{
+
+  private GUILogic gui;
+  
+  // here is a video in case anyone has questions on enum. Also, lots of google material
+  // https://unity3d.com/learn/tutorials/modules/beginner/scripting/enumerations
+  public enum BuildMode
+    {
+        Tower, //choose tower first, then place on grid second
+    }
+    
+     public BuildMode buildMode = BuildMode.Tower;
+    
+     
+    public pan panels = new pan();
+    public btn buttons = new btn();
+    public lbl labels = new lbl();
+    
+     void Awake()
+    {
+        gui = GetComponent<GUILogic>();
+    }
+    
+        void Start()
+    {
+        // this places the camera at the begining
+        initRot = gui.raycastCam.transform.eulerAngles
+    }
+    
+     public void ShowButtons()
+    {
+       //if button pressed for towers - do nothing
+        if (panels.main.activeInHierarchy)
+            return;
+            
+        gui.StartCoroutine("FadeOut", buttons.towerButtons);
+        buttons.towerButtons.SetActive(true);
+        DisableMenus();
+    }
+    
+    // i realized we need to a disable when nothing would "un-click"
+    // Jeff helped me with this. This disables the range collider and the grid when not selected
+    // so there is not a mess of pie platers everywhere
+    public void DisableMenus()
+    {
+        if (gui.towerBase) gui.towerBase.rangeInd.GetComponent<Renderer>().enabled = false;
+        if (SV.gridSelection) SV.gridSelection.GetComponent<Renderer>().enabled = false;
+        
+        gui.CancelSelection(true);
+    
+    }
+    
+    void Update()
+    {
+      if (EventSystem.current.IsPointerOverGameObject()) // if mouse is active keep up grid to place towers {
+            return;
+    }
+        ProcessGrid(); // calls the create on grid
+        ProcessTower(); // calls the make tower
+      }  
+      
+      /// More to Come!
+      void ProcessGrid()
+      {
+      }
