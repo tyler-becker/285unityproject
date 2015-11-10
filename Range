@@ -1,0 +1,66 @@
+// The range trigger is working now for the arrow tower and multi-tower - but not the cannon tower or the balista
+//tower. I think this is beacuase those towers are pretty much the same thing but a different roof and
+//another arrow attack. Since the code works for the arrows but not the others i do not think it is a coding
+//error but most likly we have something setup wrong in the tower scripts. I dunno. 
+
+//also sorry if I comment to much it helps me understand what I am doing when I am looking at forums or videos
+//and I hope it helps ya'll follow my logic when i mess up so we can fix it at meetings.
+
+
+// we are going neeed..... 
+    gonna have to pull the main tower script to give it the range properties
+   to need a box colidder so if an enemy walks into its sphere of influence it knows to fire at it
+    if it does get into influence range - do stuff if not - null
+    if it does get in there do stuff but just until it leaves(it can exit)
+
+
+
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+
+public class RangeTrigger : MonoBehaviour
+{
+    //tower base 
+    private TowerBase towerScript;  
+
+    void Start()
+    {
+        //get tower base 
+        towerScript = transform.parent.gameObject.GetComponent<TowerBase>();
+    }
+
+// enemies enter - lets do stuff.. Remember we are going to have to upgrade the towers so we can not give the
+//towers a set range. It needs to be a variable(edit- it's in the tower script that we need to wory about teh change) so we can manipulate it for the upgrade. It is way easier to this
+//(it seems) then have to create new towers when we upgrade a tower. We would have to do that x3 - a lot of work- or 
+//we can do the variable(edit - tower script). Remeber to stay organized. This is where us tagging the peasent/knight as enemies comes
+//into play so the collider knows what to shot(I think :-/ )
+void onTriggerEnter(Collider col) 
+{
+  GameObject colGO = col.gameObject;  // enemey
+  
+  if(colGO.layer != SV.enemyLayer || colGO.name.health <= 0 ) // enemey be an enemey or be dead bra
+    return;
+    
+  if(towerScript.myTargets == TowerBase.EnemeyType.Both || colGo.tag == towerSript.myTargets.ToString()) {  // since we had to have a splash tower we need to dictate air/land enemies
+    towerScript.inRange.Add(colGO);
+    colGO.SendMessage("AddTower", towerScript): // I am not sure what this is about - it is all the tutorials i have seen
+    }
+    
+    if(towerScript.inRange.Count == 1) {
+    towerScript.StartInvoke(0f);
+    }
+    }
+    
+    // here is the leave
+       void OnTriggerExit(Collider col) {
+         GameObject colGO = col.gameObject;
+         if (towerScript.inRange.Contains(colGO)) {
+           towerScript.inRange.Remove(colGO);
+            colGO.SendMessage("RemoveTower", towerScript); // i see now. It removes the tower from the enemeys
+            // pool dictionary. I guess this is in case the enemies were to attack the tower. Let's keep it
+            // because we know it works not and it doesnt hurt anything
+          }
+    }
+}
+
