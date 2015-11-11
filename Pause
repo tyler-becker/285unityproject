@@ -1,35 +1,52 @@
 // here is the pause code for everyone. Currently it uses Space Bar to pause the game
-// but we should work on either it displaying a message while paused on linking it to a
-//button on the screen
+// We have a pause menu now - since we got some flak for not having an indicator. Now we have a pause menu that can
+// show high score(when that works) , can quit and goto beginging of game and can resum.
 
 using UnityEngine;
 using System.Collections;
 
-public class Pause : MonoBehaviour {
+public class PauseMenu : MonoBehaviour
+{
 
-    public bool paused;
-	// Use this for initialization
-	void Start () {
 
-        paused = false;
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
+    public string mainSceneName;
 
-        if(Input.GetKeyDown (KeyCode.Space))
+    public string highScore;
+
+    public bool isPaused;
+
+    public GameObject pauseMenuCanvas;
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (isPaused)
         {
-            paused = !paused;
+            pauseMenuCanvas.SetActive(true);
+        } else
+        {
+            pauseMenuCanvas.SetActive(false);
         }
 
-        if (paused)
+        if(Input.GetKeyDown(KeyCode.Space))
         {
-            Time.timeScale = 0;
+            isPaused = !isPaused;
         }
-        else if (!paused)
-            Time.timeScale = 1;
+    }
 
-	
-	}
+    public void Resume()
+    {
+        isPaused = false;
+    }
+
+    public void Quit()
+    {
+        Application.LoadLevel(mainSceneName);
+    }
+
+    public void HighScore()
+    {
+
+    }
 }
+
