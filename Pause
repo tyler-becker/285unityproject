@@ -2,6 +2,10 @@
 // We have a pause menu now - since we got some flak for not having an indicator. Now we have a pause menu that can
 // show high score(when that works) , can quit and goto beginging of game and can resum.
 
+// we can use the same code for the end game scene as well. All that scence has is a menu with return to main and high scores
+// with the resume game button removed. If we decided to do something fancy with teh end game we can create another
+//page. Just label then scence as GameOver1.unity and when we pull it  use Application.LoadLevel("GameOver1");
+
 using UnityEngine;
 using System.Collections;
 
