@@ -1,0 +1,17 @@
+// here is the code fore the splash screen. Just mod the the LoadLevel to whatever number the next scene is in teh build settings
+// in unity. FOr example, I needed three code classes like this to load three scenes(EliteIntro, EliteIntro2, EliteIntro3)
+
+using UnityEngine;
+using System.Collections;
+
+public class ELiteIntro3 : MonoBehaviour {
+
+    public float delayTime = 8;
+
+    IEnumerator Start()
+    {
+        yield return new WaitForSeconds(delayTime);
+
+        Application.LoadLevel(3);
+    }
+}
