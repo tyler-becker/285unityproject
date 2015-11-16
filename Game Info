@@ -9,7 +9,7 @@ using System.Collections;
 public class GameInfo : MonoBehaviour
 {
 
-  // just labeling all the shiz we need. Take note how we need to use lbl_ to display
+  // just labeling all the shiz we need. Take note how we need to display
   
     public WaveManager waveScript;
     public GameObject btn_startWave;
