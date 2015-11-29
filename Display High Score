@@ -1,0 +1,43 @@
+// Keep this in unity even though we are not using Player Prefs anymore because it creates a nice box for us to use
+
+using UnityEngine;
+using System.Collections;
+
+public class DisplayHighScore : MonoBehaviour
+{
+
+    public GUITexture cartoonsky_top;
+
+    void OnGUI()
+    {
+        if (GUI.Button(new Rect(Screen.width * .05f, Screen.height * .30f, 420, 200), ""))
+        {
+            cartoonsky_top.enabled = true;
+
+        }
+    }
+    
+        void Start()
+    {
+        PlayerName = PlayerPrefs.GetString("input text");
+      
+
+    }
+    void OnGUIHS () {
+        if (PlayerPrefs.HasKey("Score1"))
+        {
+            GUI.Label(new Rect(240, 250, 100, 60), PlayerPrefs.GetString("PlayerName") + " : " + PlayerPrefs.GetInt("Score1"));
+         }
+        else
+        {
+            GUI.color = Color.yellow;
+            GUI.backgroundColor = Color.black;
+            GUI.Label(new Rect(140, 230, 100, 60), "   High Scores");
+            GUI.Label(new Rect(140, 235, 100, 60), "-----------------------");
+            GUI.Label(new Rect(140, 249, 100, 60), "Username:  " + PlayerPrefs.GetString("inputString"));
+            GUI.Label(new Rect(140, 265, 100, 60), "Score: " + GameHandler.enemiesKilled * 100);
+            //GUI.Label(new Rect(140, 250, 100, 60), "No Scores Yet! Hopefully coming soon....");
+        }
+
+    }
+}
