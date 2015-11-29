@@ -1,0 +1,107 @@
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+
+public class TowerControl : MonoBehaviour
+{
+  public Transform shotPos;
+  public GameObject projectile;
+  public GameObject rangeInd;
+  public float shotAngle = 0f;
+  public float lastShot = 0f;
+  
+  
+  // enemey types
+    public enum EnemyType
+    {
+        Ground,
+        Air,
+        Both,
+    }
+    
+    public EnemyType myTargets = EnemyType.Both; // so our tower knows what to shoot
+    
+        public enum ShootOrder
+    {
+        FirstIn,    //first enemey to pop up - we do not need to do anything fancy
+    }
+    
+      void Start()
+    {
+        if (turret)
+        {
+            if(shotAngle == 0)
+                Debug.LogWarning("Angle wrong!");
+
+            TowerRotation turScript = turret.gameObject.GetComponent<TowerRotation>();
+
+            if (turScript)
+                turScript.towerScript = this;
+            else
+                Debug.LogWarning("Can not hit bra!!");
+        }
+        StartInvoke(0f);
+    }
+    
+        public ShootOrder shootOrder = ShootOrder.FirstIn;
+        
+        void Awake()
+    {
+        this.enabled = false;
+    }
+    
+        //enemey enters our collider
+        public void StartInvoke(float delay)
+        {
+        if (this.enabled == true && !IsInvoking("CheckRange") && 
+           (!SV.control || SV.control.gameObject != gameObject))
+        }
+        
+            void CheckRange()
+    {
+        //need a method if no enemey is in range
+        if (inRange.Count == 0)
+        {
+            CancelInvoke("CheckRange");
+            currentTarget = null;
+            return;
+        }
+        AutoAttack();
+    }
+    
+        void AutoAttack()
+    {
+        lastShot = Time.time;
+        List<Transform> targets = GetTargets();
+        if (targets.Count == 0)
+        {
+            CancelInvoke("CheckRange");
+            return;
+        }
+        for (int i = 0; i < targets.Count; i++)
+            InstantiateProjectile(targets[i]);
+    }
+    
+        public List<Transform> GetTargets()
+    {
+        int targetCount = upgrade.options[upgrade.curLvl].targetCount;
+        List<Transform> targets = new List<Transform>();
+        if (inRange.Count <= 0) return targets;
+        switch (shootOrder)
+        {
+            case ShootOrder.FirstIn:
+                currentTarget = inRange[0].transform;
+                for (int i = 0; i < inRange.Count; i++)
+                {
+                    if (targets.Count == targetCount)
+                        break;
+
+                    Transform enemy = inRange[i].transform;
+
+                    if (!turret || (turret && CheckAngle(enemy)))
+                        targets.Add(enemy);
+                }
+                break:
+            }
+      }
+}
