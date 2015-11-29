@@ -1,5 +1,8 @@
 //here is the class/scipt for the menu GUI for the button on click. 
 
+// ignore all this stuff - keep it in studio though just in case. I am always scared to delete stuff when its working
+//this late in the game in fear it migh mess something up
+
 using UnityEngine;
  using System.Collections;
  using System.Collections.Generic;
