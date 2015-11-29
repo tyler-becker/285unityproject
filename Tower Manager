@@ -1,0 +1,34 @@
+// need a class to contain all of out tower information so we can play with it
+// remember stay organizied
+
+public class TowerManager : MonoBehaviour
+{
+
+    public static TowerManager instance;
+ 
+    public List<string> towerNames = new List<string>();
+
+    public List<GameObject> towerPrefabs = new List<GameObject>();
+   
+    public int sellLoss;
+  
+    public List<Upgrade> towerUpgrade = new List<Upgrade>();
+  
+    public List<TowerBase> towerBase = new List<TowerBase>();
+    
+    void Start()
+    {
+        instance = this;
+        
+        for (int i = 0; i < towerNames.Count; i++)
+        {
+        TowerBase tBase = tower.GetComponentInChildren<TowerBase>();
+        tower.name = towerNames[i];
+        towerBase.Add(tBase);
+        Upgrade upg = tower.GetComponentInChildren<Upgrade>();
+        towerUpgrade.Add(upg);
+                    tower.SetActive(false);
+        }
+    }
+}
+
