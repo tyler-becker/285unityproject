@@ -1,0 +1,109 @@
+// game handler stores game into so the GUI can pull it and display it on screen for us
+
+using UnityEngine;
+using System.Collections;
+
+public class GameHandler : MonoBehaviour
+{
+
+// all these variable should be pretty self explanatory
+    public static GameHandler instance;    
+    public static float gameHealth = 1f;   
+    public static float[] resources;  
+    public static int enemiesAlive;  
+    public static int enemiesKilled;   
+    public static bool gameOver = false;    
+    public static int wave = 0; 
+    public static string waveCount = "oo"; 
+    public static float maxHealth = 1f;
+    public float maxGameHealth = 1f;     
+    public float[] startResources;   
+
+  void Awake()
+    {
+        instance = this;
+        gameHealth = maxHealth = maxGameHealth;
+        resources = startResources;
+        enemiesAlive = 0;
+        enemiesKilled = 0;
+        wave = 0;
+        waveCount = "oo";
+        gameOver = false;
+
+       
+        InvokeRepeating("CheckGameState", 1f, 1f); // need this to update info every frame
+    }
+    
+    // if we wanna have win & lose game scences we would need to modify this method
+     void CheckGameState()
+    {
+       
+        if (gameHealth <= 0 && !gameOver)
+        {
+            Debug.Log("Lost Game Buddy!!!);
+
+            gameHealth = 0;     
+            gameOver = true;   
+
+            
+            StartCoroutine("LoadGameOverScene"); // if gameover - load end game scence
+        }
+    }
+    
+    // here is we kill a bad guy we get $$$
+      public static void SetResources(int index, float points)
+    {
+        resources[index] += points;
+    }
+    
+    // here is where we add the resources over time. I really do not understand it too well, have to find a lot of
+    // documentaion to help out with this
+    public IEnumerator SetResourcesRoutine(Resources res)
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(res.interval);
+            
+            for (int i = 0; i < res.value.Length; i++)
+            {
+                float resDiff = res.value[i];
+                if (res.type == TDValue.percentual)
+                    resDiff = Mathf.Round(resources[i] * res.value[i] * 100f) / 100f;
+                if (res.costType == CostType.intValue)
+                    resDiff = (int)resDiff;
+                SetResources(i, resDiff);
+            }
+        }
+      }
+        
+    
+    // kill bad guy, manipulate number
+    public static void EnemyWasKilled()
+    {
+        enemiesAlive--;
+        enemiesKilled++;
+    }
+    
+    // if an enemy reaches warrior bruce
+    public static void DealDamage(float dmg)
+    {
+        if (gameOver) return;
+        gameHealth -= dmg;
+        enemiesAlive--;
+    }
+    
+    //load game over scene
+    IEnumerator LoadGameOverScene()
+    {
+        CancelInvoke("CheckGameState");
+        if(gameOver || nextScene == "")
+            nextScene = gameOverScene;
+
+        if (nextScene == gameOverScene)
+        {
+            DontDestroyOnLoad(gameObject);
+            yield return new WaitForSeconds(5);
+        }
+        Application.LoadLevel(nextScene);
+    }
+}
