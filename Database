@@ -1,7 +1,15 @@
 // here we create teh database for the high score system - just ignore the other high score stuff in git hub. It is not
 // doing what it should. I know it was a lot of work to waste .
 
+//forgot the class
+using UnityEngine;
+using UnityEngine.EventSystems;
+using System.Collections;
 
+
+// dont call it just GUI in case it messes something up - better safe than sorry
+public class Databasel : MonoBehaviour
+{
 
 void Start() 
 {
