@@ -1,0 +1,4 @@
+// This runs in te background. From what i understand, it runs n the background to help clear up animations for the game.
+// and set animations. for example, here we tell the game where the mouse pointer goes and where/when we want text to boxes
+// to pop up on our screen. Like we want to do for the upgrade panel and the tower buttons
+
