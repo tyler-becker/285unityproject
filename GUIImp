@@ -1,4 +1,275 @@
 // This runs in te background. From what i understand, it runs n the background to help clear up animations for the game.
 // and set animations. for example, here we tell the game where the mouse pointer goes and where/when we want text to boxes
-// to pop up on our screen. Like we want to do for the upgrade panel and the tower buttons
+// to pop up on our screen. Like we want to do for the upgrade panel and the tower buttons. Also helps us find our scripts
 
+
+using UnityEngine;
+using UnityEngine.UI;
+using System.Collections;
+using System.Collections.Generic;
+
+public class GUILogic : MonoBehaviour
+{
+
+// scripts
+    public TowerManager towerScript;        
+    public GridManager gridScript;          
+    public Camera raycastCam; 
+
+// Raycast
+    private Ray ray;                
+    private RaycastHit gridHit;     
+    private RaycastHit towHit;
+    
+// Tower stuff
+  public GameObject currentGrid; 
+  public GameObject[] invisibleWidgets; // has something to do with GUI implementation
+  
+  // here we get the tower to pop up when it is on top of the grid.
+      void Update()
+    {
+        ray = raycastCam.ScreenPointToRay(Input.mousePosition);
+        RaycastGrid();
+        RaycastTower();
+    }
+    
+    // gotta detect hte grid 
+        void RaycastGrid()
+    {
+        if (Physics.Raycast(ray, out gridHit, 300, SV.gridMask | SV.towerMask))
+        {
+            GameObject hit = gridHit.transform.gameObject;
+            if(hit.layer == SV.gridLayer)
+                currentGrid = gridHit.transform.gameObject;
+        }
+        else
+            currentGrid = null;
+    }
+    
+    // then tower detect
+        void RaycastTower()
+    {
+        if (Physics.Raycast(ray, out towHit, 300, SV.towerMask))
+        {
+            currentTower = towHit.transform.gameObject;
+        }
+        else
+            currentTower = null;
+    }
+    
+    // destory our magical floating tower to acutally build it, also gets rid of the grid
+        public void CancelSelection(bool destroySelection)
+    {
+        if (destroySelection && SV.selection)
+            Destroy(SV.selection);
+
+        currentGrid = null;     
+        currentTower = null;    
+        SV.selection = null;    
+        SV.gridSelection = null;    
+        gridScript.ToggleVisibility(false);     
+    }
+    
+    // make sure it is open
+    public bool CheckIfGridIsFree()
+    {
+        if (currentGrid == null || gridScript.GridList.Contains(currentGrid.name))
+            return false;
+        else
+            return true;
+    }
+    
+    //need this so our newly created towers contain the propeties so they can be upgraded
+        public void SetTowerComponents(GameObject tower)
+    {
+        upgrade = tower.GetComponent<Upgrade>();
+        towerBase = tower.GetComponent<TowerBase>();
+    }
+    
+    //make sure the tower is not at the max level to upgrade
+        public bool AvailableUpgrade()
+    {
+        if (upgrade == null)
+        {
+            return false;
+        }
+        bool available = true;
+        int curLvl = upgrade.curLvl;
+        if (curLvl >= upgrade.options.Count - 1)
+            available = false;
+
+        return available;
+    }
+    
+    //gotta make sure we can buy it! Did not realize upgrading would be all this work...
+    public bool AffordableUpgrade()
+    {
+        if (upgrade == null)
+        {
+            return false;
+        }
+        bool affordable = true;
+        int curLvl = upgrade.curLvl;
+        if (AvailableUpgrade())
+        {
+            for (int i = 0; i < GameHandler.resources.Length; i++)
+            {
+                if (GameHandler.resources[i] < upgrade.options[curLvl + 1].cost[i])
+                {
+                    affordable = false;
+                    break;
+                }
+            }
+        }
+        else
+            affordable = false;
+
+        return affordable;
+    }
+    
+    // return the upgrade price for the next tower level
+        public float[] GetUpgradePrice()
+    {
+        float[] upgradePrice = new float[GameHandler.resources.Length];
+        int curLvl = upgrade.curLvl;
+        if (AvailableUpgrade())
+        {
+            for (int i = 0; i < upgradePrice.Length; i++)
+            {
+                upgradePrice[i] = upgrade.options[curLvl + 1].cost[i];
+            }
+        }
+
+        return upgradePrice;
+    }
+    
+    //sell tower price and money return
+       public float[] GetSellPrice()
+    {
+        float[] sellPrice = new float[GameHandler.resources.Length];
+        int curLvl = upgrade.curLvl;
+
+        for (int i = 0; i < sellPrice.Length; i++)
+        {
+            for (int j = 0; j < curLvl + 1; j++)
+                sellPrice[i] += upgrade.options[j].cost[i] * (1f - (towerScript.sellLoss / 100f));
+        }
+
+        return sellPrice;
+    }
+    
+    //create floating tower to place on grid when create tower button is pressed
+        public void InstantiateTower(int clickedButton)
+    {
+        index = clickedButton;
+        if (SV.selection)
+        {
+            currentGrid = null;
+            currentTower = null;
+            Destroy(SV.selection);
+        }
+        // no free grids - we will nto have this problem but doesnt hurt to have
+        if (gridScript.GridList.Count == gridScript.transform.childCount)
+        {
+            Debug.Log("No space bro!! Or we broke something");
+            return;
+        }
+        
+        float[] price = new float[GameHandler.resources.Length];
+        UpgOptions opt = towerScript.towerUpgrade[index].options[0];
+
+        // not enough money loop & checks
+        for (int i = 0; i < price.Length; i++)
+            price[i] = opt.cost[i];
+
+        for (int i = 0; i < price.Length; i++)
+        {
+            if (GameHandler.resources[i] < price[i])
+            {
+                Debug.Log("Not enough scrilla");
+                
+                if (SV.gridSelection)
+                {
+                    GameObject grid = SV.gridSelection;
+                    CancelSelection(true);
+                    SV.gridSelection = grid;
+                    grid.GetComponent<Renderer>().enabled = true;
+                }
+                else
+                    CancelSelection(true);
+                return;
+            }
+        }
+        
+
+        SV.selection = (GameObject)Instantiate(towerScript.towerPrefabs[index], SV.outOfView, Quaternion.identity);
+        SV.selection.name = towerScript.towerNames[index];
+       
+        //get new properties for the tower
+        towerBase = SV.selection.GetComponentInChildren<TowerBase>();
+       
+        //return the name we put in the inspector
+        towerBase.gameObject.name = towerScript.towerNames[index];
+        
+        SV.selection.transform.parent = towerContainer;
+        //get new upgrade properties of this tower instance
+        upgrade = SV.selection.GetComponentInChildren<Upgrade>();
+        towerBase.upgrade = upgrade;
+        //tower can not attack while floating - good catch
+        towerBase.enabled = false;
+      
+      // highlight were we can place towers
+        if (!SV.gridSelection)
+            gridScript.ToggleVisibility(true);
+     }
+     
+         public void BuyTower()
+    {
+        for (int i = 0; i < GameHandler.resources.Length; i++)
+            GameHandler.resources[i] -= towerScript.towerUpgrade[index].options[0].cost[i];
+
+    
+        if (SV.gridSelection)
+        {
+            currentGrid = SV.gridSelection;
+            SV.gridSelection.GetComponent<Renderer>().enabled = false;
+        }
+        gridScript.GridList.Add(currentGrid.name);
+       
+        currentGrid.transform.GetComponent<Renderer>().material = gridScript.gridFullMat;
+      
+        towerBase.enabled = true;
+        towerBase.rangeInd.GetComponent<Renderer>().enabled = false;
+    }
+    
+      public void UpgradeTower()
+    {
+        upgrade.LVLchange();
+   
+        for (int i = 0; i < GameHandler.resources.Length; i++)
+            GameHandler.resources[i] -= upgrade.options[upgrade.curLvl].cost[i];
+    }
+    
+    // sell tower and ray cast control
+       public void SellTower(GameObject tower)
+    {
+        float[] sellPrice = GetSellPrice();
+
+        for(int i = 0; i < sellPrice.Length; i++)
+            GameHandler.resources[i] += sellPrice[i];    
+
+        Ray ray = new Ray(tower.transform.position + new Vector3(0, 0.5f, 0), -transform.up);
+        RaycastHit hit;
+
+  
+        if (Physics.Raycast(ray, out hit, 20, SV.gridMask))
+        {
+            Transform grid = hit.transform;
+    
+            gridScript.GridList.Remove(grid.name);
+   
+            grid.GetComponent<Renderer>().material = gridScript.gridFreeMat;
+        }
+    }
+}
+    
