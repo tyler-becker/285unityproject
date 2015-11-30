@@ -1,4 +1,5 @@
 // Keep this in unity even though we are not using Player Prefs anymore because it creates a nice box for us to use
+//updated for playerprefs.. Trying this way again..
 
 using UnityEngine;
 using System.Collections;
@@ -7,6 +8,11 @@ public class DisplayHighScore : MonoBehaviour
 {
 
     public GUITexture cartoonsky_top;
+    string PlayerName;
+    private object initialsFieldInput;
+    public Text charText;
+    public int Score;
+    public string Name;
 
     void OnGUI()
     {
@@ -17,27 +23,53 @@ public class DisplayHighScore : MonoBehaviour
         }
     }
     
-        void Start()
+      void Start()
     {
         PlayerName = PlayerPrefs.GetString("input text");
-      
+        charText = GameObject.Find("CharText").GetComponent<Text>();
+
+        PlayerPrefs.SetInt("Score", GameHandler.enemiesKilled);
+        Score = PlayerPrefs.GetInt("Score");
+        PlayerPrefs.SetString("Name", charText.text);
+        Name = PlayerPrefs.GetString("Name");
+        PlayerPrefs.Save();
+
 
     }
-    void OnGUIHS () {
+
+
+    public void CharacterField(string inputFieldString)
+    {
+        charText.text = inputFieldString;
+    }
+
+    void OnGUI () {
+
+        GUIStyle myStyle = new GUIStyle(GUI.skin.GetStyle("label"));
+        myStyle.fontSize = 18;
+        PlayerPrefs.SetInt("Score", GameHandler.enemiesKilled);
+        Score = PlayerPrefs.GetInt("Score");
+        PlayerPrefs.SetString("Name", charText.text);
+        Name = PlayerPrefs.GetString("Name");
+        PlayerPrefs.Save();
+
         if (PlayerPrefs.HasKey("Score1"))
         {
-            GUI.Label(new Rect(240, 250, 100, 60), PlayerPrefs.GetString("PlayerName") + " : " + PlayerPrefs.GetInt("Score1"));
+            GUI.Label(new Rect(240, 250, 100, 160), PlayerPrefs.GetString("PlayerName") + " : " + PlayerPrefs.GetInt("Score1"));
          }
         else
         {
             GUI.color = Color.yellow;
             GUI.backgroundColor = Color.black;
-            GUI.Label(new Rect(140, 230, 100, 60), "   High Scores");
-            GUI.Label(new Rect(140, 235, 100, 60), "-----------------------");
-            GUI.Label(new Rect(140, 249, 100, 60), "Username:  " + PlayerPrefs.GetString("inputString"));
-            GUI.Label(new Rect(140, 265, 100, 60), "Score: " + GameHandler.enemiesKilled * 100);
+            GUI.Label(new Rect(280, 330, 200, 460), "   High Scores", myStyle);
+            GUI.Label(new Rect(280, 340, 200, 460), "-----------------------", myStyle);
+            GUI.Label(new Rect(240, 358, 200, 460), "Username:  " + charText.text, myStyle);
+            GUI.Label(new Rect(240, 378, 200, 460), "Score: " + GameHandler.enemiesKilled * 100,myStyle);
+            GUI.Label(new Rect(240, 388, 200, 460), "Score: " + Score, myStyle);
+            GUI.Label(new Rect(240, 400, 200, 460), "Username:  " + Name, myStyle);
             //GUI.Label(new Rect(140, 250, 100, 60), "No Scores Yet! Hopefully coming soon....");
         }
 
     }
 }
+
