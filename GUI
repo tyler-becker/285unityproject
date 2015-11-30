@@ -69,7 +69,162 @@ public class GUIImpl : MonoBehaviour
         ProcessTower(); // calls the make tower
       }  
       
-      /// More to Come!
+      // 
       void ProcessGrid()
       {
+          if (!SV.selection)
+            return;
+        else if (!gui.CheckIfGridIsFree() || gui.currentTower
+                 && gui.currentTower.transform.parent.gameObject != SV.selection)
+        {
+        SV.selection.transform.position = SV.outOfView;
+        }
+        else
+        {
+        // place tower if grid is there
+        SV.selection.transform.position = gui.currentGrid.transform.position;
+              if (Input.GetMouseButtonUp(0))
+            {
+                //purchase successful
+                BuyTower();
+            }
+        }
       }
+      
+      void ProcessTower()
+      {
+         GameObject tower = gui.currentTower;
+        
+        if (SV.selection || tower == null) return;
+        
+          if (Input.GetMouseButtonUp(0) && time + 0.5f < Time.time && !SV.control)
+          {
+            ShowUpgradeMenu(tower);
+            
+               if (Input.GetMouseButtonDown(1))
+               {
+                time = Time.time; // time stamps are used to build/invenotry - kinda funky
+                }
+           }
+        }
+        
+      public void CreateTower(int index)
+          {
+          if (SV.showUpgrade && gui.towerBase)
+          {
+            gui.towerBase.rangeInd.GetComponent<Renderer>().enabled = false;
+            SV.showUpgrade = false;
+           }
+           gui.InstantiateTower(index);
+           
+           ShowTooltipMenu(index);
+           
+               if(SV.selection)
+            gui.towerBase.rangeInd.GetComponent<Renderer>().enabled = true;
+       }
+       
+    void BuyTower()
+      {
+        gui.BuyTower();
+        gui.CancelSelection(false);
+        
+        if (gui.towerBase) gui.towerBase.rangeInd.GetComponent<Renderer>().enabled = false; // disable range collider
+        
+        gui.StartCoroutine("FadeOut", panels.tooltip);
+        time = Time.time;
+      }
+      
+    public void SellTower()
+    {  
+        GameObject tower = gui.upgrade.transform.parent.gameObject;
+        
+        gui.SellTower(tower);
+        SV.selection = tower;
+        DisableMenus();
+    }
+    
+    public void ShowUpgradeMenu(GameObject tower)
+    {
+        gui.StartCoroutine("FadeIn", panels.tooltip);
+        gui.StartCoroutine("FadeIn", panels.upgradeMenu);
+        
+        SV.showUpgrade = true;
+        
+        if (gui.towerBase)
+        gui.towerBase.rangeInd.GetComponent<Renderer>().enabled = false;
+        
+        gui.SetTowerComponents(tower);
+        gui.towerBase.rangeInd.GetComponent<Renderer>().enabled = true;
+        
+        UpdateUpgradeMenu();
+        
+        if (!IsInvoking("UpdateUpgradeMenu"))
+        InvokeRepeating("UpdateUpgradeMenu", 0f, 1f);
+    }
+    
+    // this upgrade menu is turning out to be a pain in teh ass... 
+    void UpdateUpgradeMenu()
+    {
+      int curLvl = gui.upgrade.curLvl;
+      UpgOptions upgOptions = gui.upgrade.options[curLvl];
+       labels.towerName.text = gui.upgrade.gameObject.name;
+      labels.properties.text = "Level:" + "\n" +
+                 "Radius:" + "\n" +
+                  Damage:" + "\n" +
+                  "Delay:" + "\n" +
+                  "Targets:";
+      labels.stats.text = +curLvl + "\n" +
+                    pgOptions.radius + "\n" +
+                    upgOptions.damage + "\n" +
+                    upgOptions.shootDelay + "\n" +
+                    upgOptions.targetCount;
+      if (labels.upgradeInfo)
+      {
+          if (curLvl < gui.upgrade.options.Count - 1)
+          {
+            UpgOptions nextUpg = gui.upgrade.options[curLvl + 1];
+            labels.upgradeInfo.text = "= " + (curLvl + 1) + "\n" +
+                    "= " + nextUpg.radius + "\n" +
+                    "= " + nextUpg.damage + "\n" +
+                    "= " + nextUpg.shootDelay + "\n" +
+                    "= " + nextUpg.targetCount;
+          }
+          else
+            labels.upgradeInfo.text = "";
+      }
+      
+      float[] sellPrice = gui.GetSellPrice();
+      float[] upgradePrice = gui.GetUpgradePrice();
+      bool affordable = true;
+      
+      for (int i = 0; i < upgradePrice.Length; i++)
+        {
+        labels.sellPrice[i].text = sellPrice[i].ToString;
+         if (!gui.AvailableUpgrade())
+            {
+                affordable = false;
+                labels.price[i].text = "";
+                continue;
+            }
+             labels.price[i].text = upgradePrice[i].ToString();
+        }
+        
+        if (affordable)
+        affordable = gui.AffordableUpgrade();
+        
+        if (affordable)
+           buttons.button_upgrade.SetActive(true);
+        else
+           buttons.button_upgrade.SetActive(false);
+        }
+  
+  //upgrade towers
+  public void Upgrade()
+  {
+    GameObject tower = gui.upgrade.gameObject;
+     gui.UpgradeTower();
+     UpdateUpgradeMenu()
+  }
+}
+
+  
